@@ -84,7 +84,7 @@ void initialise_instructions()
 
     opcode_table[0x09] =
     {
-        "ORA #const", Addressing_Mode::IMM, 2,
+        "ORA #const", Addressing_Mode::IMM_M, 2,
         [](CPU &cpu, Bus &bus)
         {
 
@@ -222,7 +222,7 @@ void initialise_instructions()
         "CLC", Addressing_Mode::IMP, 2,
         [](CPU &cpu, Bus &bus)
         {
-
+            cpu.registers.set_carry_flag(0);
         }
     };
 
@@ -318,7 +318,7 @@ void initialise_instructions()
 
     opcode_table[0x29] =
     {
-        "AND #const", Addressing_Mode::IMM, 2,
+        "AND #const", Addressing_Mode::IMM_M, 2,
         [](CPU &cpu, Bus &bus)
         {
 
@@ -606,7 +606,7 @@ void initialise_instructions()
 
     opcode_table[0x49] =
     {
-        "EOR #const", Addressing_Mode::IMM, 2,
+        "EOR #const", Addressing_Mode::IMM_M, 2,
         [](CPU &cpu, Bus &bus)
         {
 
@@ -744,7 +744,7 @@ void initialise_instructions()
         "CLI", Addressing_Mode::IMP, 2,
         [](CPU &cpu, Bus &bus)
         {
-
+            cpu.registers.set_irq_disable_flag(0);
         }
     };
 
@@ -894,7 +894,7 @@ void initialise_instructions()
 
     opcode_table[0x69] =
     {
-        "ADC #const", Addressing_Mode::IMM, 2,
+        "ADC #const", Addressing_Mode::IMM_M, 2,
         [](CPU &cpu, Bus &bus)
         {
 
@@ -1182,7 +1182,7 @@ void initialise_instructions()
 
     opcode_table[0x89] =
     {
-        "BIT #const", Addressing_Mode::IMM, 2,
+        "BIT #const", Addressing_Mode::IMM_M, 2,
         [](CPU &cpu, Bus &bus)
         {
 
@@ -1389,7 +1389,7 @@ void initialise_instructions()
 
     opcode_table[0xA0] =
     {
-        "LDY #const", Addressing_Mode::IMM, 2,
+        "LDY #const", Addressing_Mode::IMM_X, 2,
         [](CPU &cpu, Bus &bus)
         {
 
@@ -1407,7 +1407,7 @@ void initialise_instructions()
 
     opcode_table[0xA2] =
     {
-        "LDX #const", Addressing_Mode::IMM, 2,
+        "LDX #const", Addressing_Mode::IMM_X, 2,
         [](CPU &cpu, Bus &bus)
         {
 
@@ -1470,7 +1470,7 @@ void initialise_instructions()
 
     opcode_table[0xA9] =
     {
-        "LDA #const", Addressing_Mode::IMM, 2,
+        "LDA #const", Addressing_Mode::IMM_M, 2,
         [](CPU &cpu, Bus &bus)
         {
 
@@ -1608,7 +1608,7 @@ void initialise_instructions()
         "CLV", Addressing_Mode::IMP, 2,
         [](CPU &cpu, Bus &bus)
         {
-
+            cpu.registers.set_overflow_flag(0);
         }
     };
 
@@ -1677,7 +1677,7 @@ void initialise_instructions()
 
     opcode_table[0xC0] =
     {
-        "CPY #const", Addressing_Mode::IMM, 2,
+        "CPY #const", Addressing_Mode::IMM_X, 2,
         [](CPU &cpu, Bus &bus)
         {
 
@@ -1695,7 +1695,7 @@ void initialise_instructions()
 
     opcode_table[0xC2] =
     {
-        "REP #const", Addressing_Mode::IMM, 3,
+        "REP #const", Addressing_Mode::IMM_8, 3,
         [](CPU &cpu, Bus &bus)
         {
 
@@ -1758,7 +1758,7 @@ void initialise_instructions()
 
     opcode_table[0xC9] =
     {
-        "CMP #const", Addressing_Mode::IMM, 2,
+        "CMP #const", Addressing_Mode::IMM_M, 2,
         [](CPU &cpu, Bus &bus)
         {
 
@@ -1896,7 +1896,7 @@ void initialise_instructions()
         "CLD", Addressing_Mode::IMP, 2,
         [](CPU &cpu, Bus &bus)
         {
-
+            cpu.registers.set_decimal_mode_flag(0);
         }
     };
 
@@ -1965,7 +1965,7 @@ void initialise_instructions()
 
     opcode_table[0xE0] =
     {
-        "CPX #const", Addressing_Mode::IMM, 2,
+        "CPX #const", Addressing_Mode::IMM_X, 2,
         [](CPU &cpu, Bus &bus)
         {
 
@@ -1983,7 +1983,7 @@ void initialise_instructions()
 
     opcode_table[0xE2] =
     {
-        "SEP #const", Addressing_Mode::IMM, 3,
+        "SEP #const", Addressing_Mode::IMM_8, 3,
         [](CPU &cpu, Bus &bus)
         {
 
@@ -2046,7 +2046,7 @@ void initialise_instructions()
 
     opcode_table[0xE9] =
     {
-        "SBC #const", Addressing_Mode::IMM, 2,
+        "SBC #const", Addressing_Mode::IMM_M, 2,
         [](CPU &cpu, Bus &bus)
         {
 

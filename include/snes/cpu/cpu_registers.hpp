@@ -25,7 +25,7 @@ struct CPU_Registers
     bool get_carry_flag();
     bool get_break_flag(); // Emulation mode only
     // Emulation mode is a hidden flag, not in P register
-    bool get_emulation_mode_flag();
+    bool get_emulation_mode_flag(); // 0 = Native, 1 = Emulation
 
     void set_negative_flag(bool set);
     void set_overflow_flag(bool set);
