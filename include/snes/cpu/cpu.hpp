@@ -67,6 +67,8 @@ public:
     void STA();
     void LDX();
     void LDY();
+    void STX();
+    void STY();
 
     void connect_bus(Bus *bus);
 

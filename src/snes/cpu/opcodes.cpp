@@ -82,6 +82,32 @@ void CPU::LDY()
     }
 }
 
+void CPU::STX()
+{
+        if (registers.get_index_size_flag())
+    {
+        write8(effective_address, registers.x & 0xFF);
+    }
+    else
+    {
+        write16(effective_address, registers.x);
+        add_extra_cycles(1);
+    }
+}
+
+void CPU::STY()
+{
+     if (registers.get_index_size_flag())
+    {
+        write8(effective_address, registers.y & 0xFF);
+    }
+    else
+    {
+        write16(effective_address, registers.y);
+        add_extra_cycles(1);
+    }
+}
+
 void initialise_instructions()
 {
 
@@ -977,7 +1003,10 @@ void initialise_instructions()
         {
             "STY dp", Addressing_Mode::DP, 3,
             [](CPU &cpu, Bus &bus) {
+                cpu.STY();
 
+                if ((cpu.registers.dp & 0x00FF) != 0)
+                    cpu.add_extra_cycles(1);
             }};
 
     opcode_table[0x85] =
@@ -994,7 +1023,10 @@ void initialise_instructions()
         {
             "STX dp", Addressing_Mode::DP, 3,
             [](CPU &cpu, Bus &bus) {
+                cpu.STX();
 
+                if ((cpu.registers.dp & 0x00FF) != 0)
+                    cpu.add_extra_cycles(1);
             }};
 
     opcode_table[0x87] =
@@ -1039,7 +1071,7 @@ void initialise_instructions()
         {
             "STY addr", Addressing_Mode::ABS, 4,
             [](CPU &cpu, Bus &bus) {
-
+                cpu.STY();
             }};
 
     opcode_table[0x8D] =
@@ -1053,7 +1085,7 @@ void initialise_instructions()
         {
             "STX addr", Addressing_Mode::ABS, 4,
             [](CPU &cpu, Bus &bus) {
-
+                cpu.STX();
             }};
 
     opcode_table[0x8F] =
@@ -1101,7 +1133,10 @@ void initialise_instructions()
         {
             "STY dp, X", Addressing_Mode::DPX, 4,
             [](CPU &cpu, Bus &bus) {
+                cpu.STY();
 
+                if ((cpu.registers.dp & 0x00FF) != 0)
+                    cpu.add_extra_cycles(1);
             }};
 
     opcode_table[0x95] =
@@ -1115,7 +1150,10 @@ void initialise_instructions()
         {
             "STX dp, Y", Addressing_Mode::DPY, 4,
             [](CPU &cpu, Bus &bus) {
+                cpu.STX();
 
+                if ((cpu.registers.dp & 0x00FF) != 0)
+                    cpu.add_extra_cycles(1);
             }};
 
     opcode_table[0x97] =
