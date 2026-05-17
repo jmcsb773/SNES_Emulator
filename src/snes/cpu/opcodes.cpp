@@ -787,8 +787,9 @@ void initialise_instructions()
     opcode_table[0x4C] =
         {
             "JMP addr", Addressing_Mode::ABS, 3,
-            [](CPU &cpu, Bus &bus) {
-
+            [](CPU &cpu, Bus &bus)
+            {
+                cpu.registers.pc = cpu.effective_address;
             }};
 
     opcode_table[0x4D] =
@@ -924,8 +925,10 @@ void initialise_instructions()
     opcode_table[0x5C] =
         {
             "JML long", Addressing_Mode::ABL, 4,
-            [](CPU &cpu, Bus &bus) {
-
+            [](CPU &cpu, Bus &bus)
+            {
+                cpu.registers.pb = (cpu.effective_address >> 16) & 0xFF;
+                cpu.registers.pc = cpu.effective_address & 0xFFFF;
             }};
 
     opcode_table[0x5D] =
@@ -1052,8 +1055,9 @@ void initialise_instructions()
     opcode_table[0x6C] =
         {
             "JMP (addr)", Addressing_Mode::ABI, 5,
-            [](CPU &cpu, Bus &bus) {
-
+            [](CPU &cpu, Bus &bus)
+            {
+                cpu.registers.pc = cpu.effective_address;
             }};
 
     opcode_table[0x6D] =
@@ -1195,8 +1199,9 @@ void initialise_instructions()
     opcode_table[0x7C] =
         {
             "JMP (addr, X)", Addressing_Mode::ABIX, 6,
-            [](CPU &cpu, Bus &bus) {
-
+            [](CPU &cpu, Bus &bus)
+            {
+                cpu.registers.pc = cpu.effective_address;
             }};
 
     opcode_table[0x7D] =
@@ -1247,7 +1252,8 @@ void initialise_instructions()
     opcode_table[0x82] =
         {
             "BRL label", Addressing_Mode::RELL, 4,
-            [](CPU &cpu, Bus &bus) {
+            [](CPU &cpu, Bus &bus)
+            {
                 cpu.registers.pc = cpu.effective_address;
             }};
 
@@ -2219,8 +2225,10 @@ void initialise_instructions()
     opcode_table[0xDC] =
         {
             "JML [addr]", Addressing_Mode::ABIL, 6,
-            [](CPU &cpu, Bus &bus) {
-
+            [](CPU &cpu, Bus &bus)
+            {
+                cpu.registers.pb = (cpu.effective_address >> 16) & 0xFF;
+                cpu.registers.pc = cpu.effective_address & 0xFFFF;
             }};
 
     opcode_table[0xDD] =
