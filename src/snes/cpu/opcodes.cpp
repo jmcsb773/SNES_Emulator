@@ -284,8 +284,19 @@ void initialise_instructions()
     opcode_table[0x10] =
         {
             "BPL near", Addressing_Mode::REL, 2,
-            [](CPU &cpu, Bus &bus) {
+            [](CPU &cpu, Bus &bus)
+            {
+                if (!cpu.registers.get_negative_flag())
+                {
+                    cpu.registers.pc = cpu.effective_address;
 
+                    cpu.add_extra_cycles(1);
+
+                    if (cpu.registers.get_emulation_mode_flag())
+                    {
+                        cpu.add_extra_cycles(1);
+                    }
+                }
             }};
 
     opcode_table[0x11] =
@@ -472,8 +483,9 @@ void initialise_instructions()
     opcode_table[0x28] =
         {
             "PLP", Addressing_Mode::IMP, 4,
-            [](CPU &cpu, Bus &bus) {
-                cpu.registers.p =  cpu.pop8();
+            [](CPU &cpu, Bus &bus)
+            {
+                cpu.registers.p = cpu.pop8();
 
                 cpu.registers.set_zero_flag(cpu.registers.p == 0);
                 cpu.registers.set_negative_flag((cpu.registers.p & 0x80) != 0);
@@ -496,8 +508,9 @@ void initialise_instructions()
     opcode_table[0x2B] =
         {
             "PLD", Addressing_Mode::IMP, 5,
-            [](CPU &cpu, Bus &bus) {
-                cpu.registers.dp =  cpu.pop8();
+            [](CPU &cpu, Bus &bus)
+            {
+                cpu.registers.dp = cpu.pop8();
 
                 cpu.registers.set_zero_flag(cpu.registers.dp == 0);
                 cpu.registers.set_negative_flag((cpu.registers.dp & 0x80) != 0);
@@ -534,8 +547,19 @@ void initialise_instructions()
     opcode_table[0x30] =
         {
             "BMI near", Addressing_Mode::REL, 2,
-            [](CPU &cpu, Bus &bus) {
+            [](CPU &cpu, Bus &bus)
+            {
+                if (cpu.registers.get_negative_flag())
+                {
+                    cpu.registers.pc = cpu.effective_address;
 
+                    cpu.add_extra_cycles(1);
+
+                    if (cpu.registers.get_emulation_mode_flag())
+                    {
+                        cpu.add_extra_cycles(1);
+                    }
+                }
             }};
 
     opcode_table[0x31] =
@@ -791,8 +815,19 @@ void initialise_instructions()
     opcode_table[0x50] =
         {
             "BVC near", Addressing_Mode::REL, 2,
-            [](CPU &cpu, Bus &bus) {
+            [](CPU &cpu, Bus &bus)
+            {
+                if (!cpu.registers.get_overflow_flag())
+                {
+                    cpu.registers.pc = cpu.effective_address;
 
+                    cpu.add_extra_cycles(1);
+
+                    if (cpu.registers.get_emulation_mode_flag())
+                    {
+                        cpu.add_extra_cycles(1);
+                    }
+                }
             }};
 
     opcode_table[0x51] =
@@ -1045,8 +1080,19 @@ void initialise_instructions()
     opcode_table[0x70] =
         {
             "BVS near", Addressing_Mode::REL, 2,
-            [](CPU &cpu, Bus &bus) {
+            [](CPU &cpu, Bus &bus)
+            {
+                if (cpu.registers.get_overflow_flag())
+                {
+                    cpu.registers.pc = cpu.effective_address;
 
+                    cpu.add_extra_cycles(1);
+
+                    if (cpu.registers.get_emulation_mode_flag())
+                    {
+                        cpu.add_extra_cycles(1);
+                    }
+                }
             }};
 
     opcode_table[0x71] =
@@ -1115,7 +1161,8 @@ void initialise_instructions()
     opcode_table[0x7A] =
         {
             "PLY", Addressing_Mode::IMP, 4,
-            [](CPU &cpu, Bus &bus) {
+            [](CPU &cpu, Bus &bus)
+            {
                 if (cpu.registers.get_index_size_flag())
                 {
                     cpu.registers.y = (cpu.registers.y & 0xFF00) | cpu.pop8();
@@ -1176,8 +1223,14 @@ void initialise_instructions()
     opcode_table[0x80] =
         {
             "BRA near", Addressing_Mode::REL, 3,
-            [](CPU &cpu, Bus &bus) {
+            [](CPU &cpu, Bus &bus)
+            {
+                cpu.registers.pc = cpu.effective_address;
 
+                if (cpu.registers.get_emulation_mode_flag())
+                {
+                    cpu.add_extra_cycles(1);
+                }
             }};
 
     opcode_table[0x81] =
@@ -1195,7 +1248,7 @@ void initialise_instructions()
         {
             "BRL label", Addressing_Mode::RELL, 4,
             [](CPU &cpu, Bus &bus) {
-
+                cpu.registers.pc = cpu.effective_address;
             }};
 
     opcode_table[0x83] =
@@ -1351,8 +1404,19 @@ void initialise_instructions()
     opcode_table[0x90] =
         {
             "BCC near", Addressing_Mode::REL, 2,
-            [](CPU &cpu, Bus &bus) {
+            [](CPU &cpu, Bus &bus)
+            {
+                if (!cpu.registers.get_carry_flag())
+                {
+                    cpu.registers.pc = cpu.effective_address;
 
+                    cpu.add_extra_cycles(1);
+
+                    if (cpu.registers.get_emulation_mode_flag())
+                    {
+                        cpu.add_extra_cycles(1);
+                    }
+                }
             }};
 
     opcode_table[0x91] =
@@ -1655,7 +1719,7 @@ void initialise_instructions()
             "PLB", Addressing_Mode::IMP, 4,
             [](CPU &cpu, Bus &bus)
             {
-                cpu.registers.db =  cpu.pop8();
+                cpu.registers.db = cpu.pop8();
 
                 cpu.registers.set_zero_flag(cpu.registers.db == 0);
                 cpu.registers.set_negative_flag((cpu.registers.db & 0x80) != 0);
@@ -1696,8 +1760,19 @@ void initialise_instructions()
     opcode_table[0xB0] =
         {
             "BCS near", Addressing_Mode::REL, 2,
-            [](CPU &cpu, Bus &bus) {
+            [](CPU &cpu, Bus &bus)
+            {
+                if (cpu.registers.get_carry_flag())
+                {
+                    cpu.registers.pc = cpu.effective_address;
 
+                    cpu.add_extra_cycles(1);
+
+                    if (cpu.registers.get_emulation_mode_flag())
+                    {
+                        cpu.add_extra_cycles(1);
+                    }
+                }
             }};
 
     opcode_table[0xB1] =
@@ -2035,8 +2110,19 @@ void initialise_instructions()
     opcode_table[0xD0] =
         {
             "BNE near", Addressing_Mode::REL, 2,
-            [](CPU &cpu, Bus &bus) {
+            [](CPU &cpu, Bus &bus)
+            {
+                if (!cpu.registers.get_zero_flag())
+                {
+                    cpu.registers.pc = cpu.effective_address;
 
+                    cpu.add_extra_cycles(1);
+
+                    if (cpu.registers.get_emulation_mode_flag())
+                    {
+                        cpu.add_extra_cycles(1);
+                    }
+                }
             }};
 
     opcode_table[0xD1] =
@@ -2298,8 +2384,19 @@ void initialise_instructions()
     opcode_table[0xF0] =
         {
             "BEQ near", Addressing_Mode::REL, 2,
-            [](CPU &cpu, Bus &bus) {
+            [](CPU &cpu, Bus &bus)
+            {
+                if (cpu.registers.get_zero_flag())
+                {
+                    cpu.registers.pc = cpu.effective_address;
 
+                    cpu.add_extra_cycles(1);
+
+                    if (cpu.registers.get_emulation_mode_flag())
+                    {
+                        cpu.add_extra_cycles(1);
+                    }
+                }
             }};
 
     opcode_table[0xF1] =
@@ -2372,7 +2469,8 @@ void initialise_instructions()
     opcode_table[0xFA] =
         {
             "PLX", Addressing_Mode::IMP, 4,
-            [](CPU &cpu, Bus &bus) {
+            [](CPU &cpu, Bus &bus)
+            {
                 if (cpu.registers.get_index_size_flag())
                 {
                     cpu.registers.x = (cpu.registers.x & 0xFF00) | cpu.pop8();
