@@ -226,8 +226,9 @@ void initialise_instructions()
     opcode_table[0x08] =
         {
             "PHP", Addressing_Mode::IMP, 3,
-            [](CPU &cpu, Bus &bus) {
-
+            [](CPU &cpu, Bus &bus)
+            {
+                cpu.push8(cpu.registers.p);
             }};
 
     opcode_table[0x09] =
@@ -247,8 +248,9 @@ void initialise_instructions()
     opcode_table[0x0B] =
         {
             "PHD", Addressing_Mode::IMP, 4,
-            [](CPU &cpu, Bus &bus) {
-
+            [](CPU &cpu, Bus &bus)
+            {
+                cpu.push8(cpu.registers.dp);
             }};
 
     opcode_table[0x0C] =
@@ -471,7 +473,10 @@ void initialise_instructions()
         {
             "PLP", Addressing_Mode::IMP, 4,
             [](CPU &cpu, Bus &bus) {
+                cpu.registers.p =  cpu.pop8();
 
+                cpu.registers.set_zero_flag(cpu.registers.p == 0);
+                cpu.registers.set_negative_flag((cpu.registers.p & 0x80) != 0);
             }};
 
     opcode_table[0x29] =
@@ -492,7 +497,10 @@ void initialise_instructions()
         {
             "PLD", Addressing_Mode::IMP, 5,
             [](CPU &cpu, Bus &bus) {
+                cpu.registers.dp =  cpu.pop8();
 
+                cpu.registers.set_zero_flag(cpu.registers.dp == 0);
+                cpu.registers.set_negative_flag((cpu.registers.dp & 0x80) != 0);
             }};
 
     opcode_table[0x2C] =
@@ -717,8 +725,17 @@ void initialise_instructions()
     opcode_table[0x48] =
         {
             "PHA", Addressing_Mode::IMP, 3,
-            [](CPU &cpu, Bus &bus) {
-
+            [](CPU &cpu, Bus &bus)
+            {
+                if (cpu.registers.get_accum_size_flag())
+                {
+                    cpu.push8(cpu.registers.a & 0xFF);
+                }
+                else
+                {
+                    cpu.push16(cpu.registers.a);
+                    cpu.add_extra_cycles(1);
+                }
             }};
 
     opcode_table[0x49] =
@@ -738,8 +755,9 @@ void initialise_instructions()
     opcode_table[0x4B] =
         {
             "PHK", Addressing_Mode::IMP, 3,
-            [](CPU &cpu, Bus &bus) {
-
+            [](CPU &cpu, Bus &bus)
+            {
+                cpu.push8(cpu.registers.pb);
             }};
 
     opcode_table[0x4C] =
@@ -844,8 +862,17 @@ void initialise_instructions()
     opcode_table[0x5A] =
         {
             "PHY", Addressing_Mode::IMP, 3,
-            [](CPU &cpu, Bus &bus) {
-
+            [](CPU &cpu, Bus &bus)
+            {
+                if (cpu.registers.get_index_size_flag())
+                {
+                    cpu.push8(cpu.registers.y & 0xFF);
+                }
+                else
+                {
+                    cpu.push16(cpu.registers.y);
+                    cpu.add_extra_cycles(1);
+                }
             }};
 
     opcode_table[0x5B] =
@@ -946,8 +973,24 @@ void initialise_instructions()
     opcode_table[0x68] =
         {
             "PLA", Addressing_Mode::IMP, 4,
-            [](CPU &cpu, Bus &bus) {
+            [](CPU &cpu, Bus &bus)
+            {
+                if (cpu.registers.get_accum_size_flag())
+                {
+                    cpu.registers.a = (cpu.registers.a & 0xFF00) | cpu.pop8();
 
+                    cpu.registers.set_zero_flag((cpu.registers.a & 0x00FF) == 0);
+                    cpu.registers.set_negative_flag((cpu.registers.a & 0x80) != 0);
+                }
+                else
+                {
+                    cpu.registers.a = cpu.pop16();
+
+                    cpu.registers.set_zero_flag(cpu.registers.a == 0);
+                    cpu.registers.set_negative_flag((cpu.registers.a & 0x8000) != 0);
+
+                    cpu.add_extra_cycles(1);
+                }
             }};
 
     opcode_table[0x69] =
@@ -1073,7 +1116,22 @@ void initialise_instructions()
         {
             "PLY", Addressing_Mode::IMP, 4,
             [](CPU &cpu, Bus &bus) {
+                if (cpu.registers.get_index_size_flag())
+                {
+                    cpu.registers.y = (cpu.registers.y & 0xFF00) | cpu.pop8();
 
+                    cpu.registers.set_zero_flag((cpu.registers.y & 0x00FF) == 0);
+                    cpu.registers.set_negative_flag((cpu.registers.y & 0x80) != 0);
+                }
+                else
+                {
+                    cpu.registers.y = cpu.pop16();
+
+                    cpu.registers.set_zero_flag(cpu.registers.y == 0);
+                    cpu.registers.set_negative_flag((cpu.registers.y & 0x8000) != 0);
+
+                    cpu.add_extra_cycles(1);
+                }
             }};
 
     opcode_table[0x7B] =
@@ -1255,8 +1313,9 @@ void initialise_instructions()
     opcode_table[0x8B] =
         {
             "PHB", Addressing_Mode::IMP, 3,
-            [](CPU &cpu, Bus &bus) {
-
+            [](CPU &cpu, Bus &bus)
+            {
+                cpu.push8(cpu.registers.db);
             }};
 
     opcode_table[0x8C] =
@@ -1594,8 +1653,12 @@ void initialise_instructions()
     opcode_table[0xAB] =
         {
             "PLB", Addressing_Mode::IMP, 4,
-            [](CPU &cpu, Bus &bus) {
+            [](CPU &cpu, Bus &bus)
+            {
+                cpu.registers.db =  cpu.pop8();
 
+                cpu.registers.set_zero_flag(cpu.registers.db == 0);
+                cpu.registers.set_negative_flag((cpu.registers.db & 0x80) != 0);
             }};
 
     opcode_table[0xAC] =
@@ -2047,8 +2110,17 @@ void initialise_instructions()
     opcode_table[0xDA] =
         {
             "PHX", Addressing_Mode::IMP, 3,
-            [](CPU &cpu, Bus &bus) {
-
+            [](CPU &cpu, Bus &bus)
+            {
+                if (cpu.registers.get_index_size_flag())
+                {
+                    cpu.push8(cpu.registers.x & 0xFF);
+                }
+                else
+                {
+                    cpu.push16(cpu.registers.x);
+                    cpu.add_extra_cycles(1);
+                }
             }};
 
     opcode_table[0xDB] =
@@ -2301,7 +2373,22 @@ void initialise_instructions()
         {
             "PLX", Addressing_Mode::IMP, 4,
             [](CPU &cpu, Bus &bus) {
+                if (cpu.registers.get_index_size_flag())
+                {
+                    cpu.registers.x = (cpu.registers.x & 0xFF00) | cpu.pop8();
 
+                    cpu.registers.set_zero_flag((cpu.registers.x & 0x00FF) == 0);
+                    cpu.registers.set_negative_flag((cpu.registers.x & 0x80) != 0);
+                }
+                else
+                {
+                    cpu.registers.x = cpu.pop16();
+
+                    cpu.registers.set_zero_flag(cpu.registers.x == 0);
+                    cpu.registers.set_negative_flag((cpu.registers.x & 0x8000) != 0);
+
+                    cpu.add_extra_cycles(1);
+                }
             }};
 
     opcode_table[0xFB] =

@@ -72,6 +72,12 @@ public:
     void INC_M(); // Increments on data in memory
     void DEC_M(); // Decrements on data in memory
 
+    // Stack Helpers
+    void push8(uint8_t data);
+    void push16(uint16_t data);
+    uint8_t pop8();
+    uint16_t pop16();
+
     void connect_bus(Bus *bus);
 
 private:
@@ -85,11 +91,7 @@ private:
     void check_interrupt_pending();
     void handle_interrupt();
 
-    // Stack Helpers
-    void push8(uint8_t data);
-    void push16(uint16_t data);
-    uint8_t pop8();
-    uint16_t pop16();
+    
 
     // Bus helpers (TODO: MUST MAKE IT SO IT DOES WRAPPING WHEN NECESSARY CORRECTLY)
     void write8(uint32_t address, uint8_t data);
