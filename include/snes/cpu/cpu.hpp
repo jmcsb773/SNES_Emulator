@@ -69,6 +69,8 @@ public:
     void LDY();
     void STX();
     void STY();
+    void INC_M(); // Increments on data in memory
+    void DEC_M(); // Decrements on data in memory
 
     void connect_bus(Bus *bus);
 

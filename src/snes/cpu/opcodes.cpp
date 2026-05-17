@@ -108,6 +108,62 @@ void CPU::STY()
     }
 }
 
+void CPU::INC_M()
+{
+    if (registers.get_accum_size_flag())
+    {
+        uint8_t data = read8(effective_address);
+
+        data += 1;
+
+        write8(effective_address, data);
+
+        registers.set_zero_flag(data == 0);
+        registers.set_negative_flag((data & 0x80) != 0);
+    }
+    else
+    {
+        uint16_t data = read16(effective_address);
+
+        data += 1;
+
+        write16(effective_address, data);
+
+        registers.set_zero_flag(data == 0);
+        registers.set_negative_flag((data & 0x8000) != 0);
+
+        add_extra_cycles(2);
+    }
+}
+
+void CPU::DEC_M()
+{
+    if (registers.get_accum_size_flag())
+    {
+        uint8_t data = read8(effective_address);
+
+        data -= 1;
+
+        write8(effective_address, data);
+
+        registers.set_zero_flag(data == 0);
+        registers.set_negative_flag((data & 0x80) != 0);
+    }
+    else
+    {
+        uint16_t data = read16(effective_address);
+
+        data -= 1;
+
+        write16(effective_address, data);
+
+        registers.set_zero_flag(data == 0);
+        registers.set_negative_flag((data & 0x8000) != 0);
+
+        add_extra_cycles(2);
+    }
+}
+
 void initialise_instructions()
 {
 
@@ -297,8 +353,26 @@ void initialise_instructions()
     opcode_table[0x1A] =
         {
             "INC", Addressing_Mode::ACC, 2,
-            [](CPU &cpu, Bus &bus) {
+            [](CPU &cpu, Bus &bus)
+            {
+                if (cpu.registers.get_accum_size_flag())
+                {
+                    uint8_t data = (cpu.registers.a & 0x00FF) + 1;
 
+                    cpu.registers.a = (cpu.registers.a & 0xFF00) | data;
+
+                    cpu.registers.set_zero_flag(data == 0);
+                    cpu.registers.set_negative_flag((data & 0x80) != 0);
+                }
+                else
+                {
+                    cpu.registers.a += 1;
+
+                    cpu.registers.set_zero_flag(cpu.registers.a == 0);
+                    cpu.registers.set_negative_flag((cpu.registers.a & 0x8000) != 0);
+
+                    cpu.add_extra_cycles(1);
+                }
             }};
 
     opcode_table[0x1B] =
@@ -522,8 +596,26 @@ void initialise_instructions()
     opcode_table[0x3A] =
         {
             "DEC", Addressing_Mode::ACC, 2,
-            [](CPU &cpu, Bus &bus) {
+            [](CPU &cpu, Bus &bus)
+            {
+                if (cpu.registers.get_accum_size_flag())
+                {
+                    uint8_t data = (cpu.registers.a & 0x00FF) - 1;
 
+                    cpu.registers.a = (cpu.registers.a & 0xFF00) | data;
+
+                    cpu.registers.set_zero_flag(data == 0);
+                    cpu.registers.set_negative_flag((data & 0x80) != 0);
+                }
+                else
+                {
+                    cpu.registers.a -= 1;
+
+                    cpu.registers.set_zero_flag(cpu.registers.a == 0);
+                    cpu.registers.set_negative_flag((cpu.registers.a & 0x8000) != 0);
+
+                    cpu.add_extra_cycles(1);
+                }
             }};
 
     opcode_table[0x3B] =
@@ -1103,8 +1195,26 @@ void initialise_instructions()
     opcode_table[0x88] =
         {
             "DEY", Addressing_Mode::IMP, 2,
-            [](CPU &cpu, Bus &bus) {
+            [](CPU &cpu, Bus &bus)
+            {
+                if (cpu.registers.get_index_size_flag())
+                {
+                    uint8_t data = (cpu.registers.y & 0x00FF) - 1;
 
+                    cpu.registers.y = (cpu.registers.y & 0xFF00) | data;
+
+                    cpu.registers.set_zero_flag(data == 0);
+                    cpu.registers.set_negative_flag((data & 0x80) != 0);
+                }
+                else
+                {
+                    cpu.registers.y -= 1;
+
+                    cpu.registers.set_zero_flag(cpu.registers.y == 0);
+                    cpu.registers.set_negative_flag((cpu.registers.y & 0x8000) != 0);
+
+                    cpu.add_extra_cycles(1);
+                }
             }};
 
     opcode_table[0x89] =
@@ -1751,8 +1861,12 @@ void initialise_instructions()
     opcode_table[0xC6] =
         {
             "DEC dp", Addressing_Mode::DP, 5,
-            [](CPU &cpu, Bus &bus) {
+            [](CPU &cpu, Bus &bus)
+            {
+                cpu.DEC_M();
 
+                if ((cpu.registers.dp & 0x00FF) != 0)
+                    cpu.add_extra_cycles(1);
             }};
 
     opcode_table[0xC7] =
@@ -1765,8 +1879,26 @@ void initialise_instructions()
     opcode_table[0xC8] =
         {
             "INY", Addressing_Mode::IMP, 2,
-            [](CPU &cpu, Bus &bus) {
+            [](CPU &cpu, Bus &bus)
+            {
+                if (cpu.registers.get_index_size_flag())
+                {
+                    uint8_t data = (cpu.registers.y & 0x00FF) + 1;
 
+                    cpu.registers.y = (cpu.registers.y & 0xFF00) | data;
+
+                    cpu.registers.set_zero_flag(data == 0);
+                    cpu.registers.set_negative_flag((data & 0x80) != 0);
+                }
+                else
+                {
+                    cpu.registers.y += 1;
+
+                    cpu.registers.set_zero_flag(cpu.registers.y == 0);
+                    cpu.registers.set_negative_flag((cpu.registers.y & 0x8000) != 0);
+
+                    cpu.add_extra_cycles(1);
+                }
             }};
 
     opcode_table[0xC9] =
@@ -1779,8 +1911,26 @@ void initialise_instructions()
     opcode_table[0xCA] =
         {
             "DEX", Addressing_Mode::IMP, 2,
-            [](CPU &cpu, Bus &bus) {
+            [](CPU &cpu, Bus &bus)
+            {
+                if (cpu.registers.get_index_size_flag())
+                {
+                    uint8_t data = (cpu.registers.x & 0x00FF) - 1;
 
+                    cpu.registers.x = (cpu.registers.x & 0xFF00) | data;
+
+                    cpu.registers.set_zero_flag(data == 0);
+                    cpu.registers.set_negative_flag((data & 0x80) != 0);
+                }
+                else
+                {
+                    cpu.registers.x -= 1;
+
+                    cpu.registers.set_zero_flag(cpu.registers.x == 0);
+                    cpu.registers.set_negative_flag((cpu.registers.x & 0x8000) != 0);
+
+                    cpu.add_extra_cycles(1);
+                }
             }};
 
     opcode_table[0xCB] =
@@ -1807,8 +1957,9 @@ void initialise_instructions()
     opcode_table[0xCE] =
         {
             "DEC addr", Addressing_Mode::ABS, 6,
-            [](CPU &cpu, Bus &bus) {
-
+            [](CPU &cpu, Bus &bus)
+            {
+                cpu.DEC_M();
             }};
 
     opcode_table[0xCF] =
@@ -1863,8 +2014,12 @@ void initialise_instructions()
     opcode_table[0xD6] =
         {
             "DEC dp, X", Addressing_Mode::DPX, 6,
-            [](CPU &cpu, Bus &bus) {
+            [](CPU &cpu, Bus &bus)
+            {
+                cpu.DEC_M();
 
+                if ((cpu.registers.dp & 0x00FF) != 0)
+                    cpu.add_extra_cycles(1);
             }};
 
     opcode_table[0xD7] =
@@ -1920,8 +2075,9 @@ void initialise_instructions()
     opcode_table[0xDE] =
         {
             "DEC addr, X", Addressing_Mode::ABX, 7,
-            [](CPU &cpu, Bus &bus) {
-
+            [](CPU &cpu, Bus &bus)
+            {
+                cpu.DEC_M();
             }};
 
     opcode_table[0xDF] =
@@ -1976,8 +2132,12 @@ void initialise_instructions()
     opcode_table[0xE6] =
         {
             "INC dp", Addressing_Mode::DP, 5,
-            [](CPU &cpu, Bus &bus) {
+            [](CPU &cpu, Bus &bus)
+            {
+                cpu.INC_M();
 
+                if ((cpu.registers.dp & 0x00FF) != 0)
+                    cpu.add_extra_cycles(1);
             }};
 
     opcode_table[0xE7] =
@@ -1990,8 +2150,26 @@ void initialise_instructions()
     opcode_table[0xE8] =
         {
             "INX", Addressing_Mode::IMP, 2,
-            [](CPU &cpu, Bus &bus) {
+            [](CPU &cpu, Bus &bus)
+            {
+                if (cpu.registers.get_index_size_flag())
+                {
+                    uint8_t data = (cpu.registers.x & 0x00FF) + 1;
 
+                    cpu.registers.x = (cpu.registers.x & 0xFF00) | data;
+
+                    cpu.registers.set_zero_flag(data == 0);
+                    cpu.registers.set_negative_flag((data & 0x80) != 0);
+                }
+                else
+                {
+                    cpu.registers.x += 1;
+
+                    cpu.registers.set_zero_flag(cpu.registers.x == 0);
+                    cpu.registers.set_negative_flag((cpu.registers.x & 0x8000) != 0);
+
+                    cpu.add_extra_cycles(1);
+                }
             }};
 
     opcode_table[0xE9] =
@@ -2033,8 +2211,9 @@ void initialise_instructions()
     opcode_table[0xEE] =
         {
             "INC addr", Addressing_Mode::ABS, 6,
-            [](CPU &cpu, Bus &bus) {
-
+            [](CPU &cpu, Bus &bus)
+            {
+                cpu.INC_M();
             }};
 
     opcode_table[0xEF] =
@@ -2089,8 +2268,12 @@ void initialise_instructions()
     opcode_table[0xF6] =
         {
             "INC dp, X", Addressing_Mode::DPX, 6,
-            [](CPU &cpu, Bus &bus) {
+            [](CPU &cpu, Bus &bus)
+            {
+                cpu.INC_M();
 
+                if ((cpu.registers.dp & 0x00FF) != 0)
+                    cpu.add_extra_cycles(1);
             }};
 
     opcode_table[0xF7] =
@@ -2145,8 +2328,12 @@ void initialise_instructions()
     opcode_table[0xFE] =
         {
             "INC addr, X", Addressing_Mode::ABX, 7,
-            [](CPU &cpu, Bus &bus) {
+            [](CPU &cpu, Bus &bus)
+            {
+                cpu.INC_M();
 
+                if ((cpu.registers.dp & 0x00FF) != 0)
+                    cpu.add_extra_cycles(1);
             }};
 
     opcode_table[0xFF] =
