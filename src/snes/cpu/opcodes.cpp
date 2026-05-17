@@ -84,7 +84,7 @@ void CPU::LDY()
 
 void CPU::STX()
 {
-        if (registers.get_index_size_flag())
+    if (registers.get_index_size_flag())
     {
         write8(effective_address, registers.x & 0xFF);
     }
@@ -97,7 +97,7 @@ void CPU::STX()
 
 void CPU::STY()
 {
-     if (registers.get_index_size_flag())
+    if (registers.get_index_size_flag())
     {
         write8(effective_address, registers.y & 0xFF);
     }
@@ -294,6 +294,49 @@ void initialise_instructions()
 
             }};
 
+    opcode_table[0x1A] =
+        {
+            "INC", Addressing_Mode::ACC, 2,
+            [](CPU &cpu, Bus &bus) {
+
+            }};
+
+    opcode_table[0x1B] =
+        {
+            "TCS", Addressing_Mode::IMP, 2,
+            [](CPU &cpu, Bus &bus)
+            {
+                cpu.registers.sp = cpu.registers.a;
+            }};
+
+    opcode_table[0x1C] =
+        {
+            "TRB addr", Addressing_Mode::ABS, 6,
+            [](CPU &cpu, Bus &bus) {
+
+            }};
+
+    opcode_table[0x1D] =
+        {
+            "ORA addr, X", Addressing_Mode::ABX, 4,
+            [](CPU &cpu, Bus &bus) {
+
+            }};
+
+    opcode_table[0x1E] =
+        {
+            "ASL addr, X", Addressing_Mode::ABX, 7,
+            [](CPU &cpu, Bus &bus) {
+
+            }};
+
+    opcode_table[0x1F] =
+        {
+            "ORA long, X", Addressing_Mode::ALX, 5,
+            [](CPU &cpu, Bus &bus) {
+
+            }};
+
     opcode_table[0x20] =
         {
             "JSR addr", Addressing_Mode::ABS, 6,
@@ -486,8 +529,12 @@ void initialise_instructions()
     opcode_table[0x3B] =
         {
             "TSC", Addressing_Mode::IMP, 2,
-            [](CPU &cpu, Bus &bus) {
+            [](CPU &cpu, Bus &bus)
+            {
+                cpu.registers.a = cpu.registers.sp;
 
+                cpu.registers.set_zero_flag(cpu.registers.a == 0);
+                cpu.registers.set_negative_flag((cpu.registers.a & 0x8000) != 0);
             }};
 
     opcode_table[0x3C] =
@@ -711,9 +758,13 @@ void initialise_instructions()
 
     opcode_table[0x5B] =
         {
-            "TCT", Addressing_Mode::IMP, 2,
-            [](CPU &cpu, Bus &bus) {
+            "TCD", Addressing_Mode::IMP, 2,
+            [](CPU &cpu, Bus &bus)
+            {
+                cpu.registers.dp = cpu.registers.a;
 
+                cpu.registers.set_zero_flag(cpu.registers.dp == 0);
+                cpu.registers.set_negative_flag((cpu.registers.dp & 0x8000) != 0);
             }};
 
     opcode_table[0x5C] =
@@ -936,8 +987,12 @@ void initialise_instructions()
     opcode_table[0x7B] =
         {
             "TDC", Addressing_Mode::IMP, 2,
-            [](CPU &cpu, Bus &bus) {
+            [](CPU &cpu, Bus &bus)
+            {
+                cpu.registers.a = cpu.registers.dp;
 
+                cpu.registers.set_zero_flag(cpu.registers.a == 0);
+                cpu.registers.set_negative_flag((cpu.registers.a & 0x8000) != 0);
             }};
 
     opcode_table[0x7C] =
@@ -978,7 +1033,8 @@ void initialise_instructions()
     opcode_table[0x81] =
         {
             "STA (dp, X)", Addressing_Mode::DPIX, 6,
-            [](CPU &cpu, Bus &bus) {
+            [](CPU &cpu, Bus &bus)
+            {
                 cpu.STA();
 
                 if ((cpu.registers.dp & 0x00FF) != 0)
@@ -995,14 +1051,16 @@ void initialise_instructions()
     opcode_table[0x83] =
         {
             "STA sr, S", Addressing_Mode::SR, 4,
-            [](CPU &cpu, Bus &bus) {
+            [](CPU &cpu, Bus &bus)
+            {
                 cpu.STA();
             }};
 
     opcode_table[0x84] =
         {
             "STY dp", Addressing_Mode::DP, 3,
-            [](CPU &cpu, Bus &bus) {
+            [](CPU &cpu, Bus &bus)
+            {
                 cpu.STY();
 
                 if ((cpu.registers.dp & 0x00FF) != 0)
@@ -1012,7 +1070,8 @@ void initialise_instructions()
     opcode_table[0x85] =
         {
             "STA dp", Addressing_Mode::DP, 3,
-            [](CPU &cpu, Bus &bus) {
+            [](CPU &cpu, Bus &bus)
+            {
                 cpu.STA();
 
                 if ((cpu.registers.dp & 0x00FF) != 0)
@@ -1022,7 +1081,8 @@ void initialise_instructions()
     opcode_table[0x86] =
         {
             "STX dp", Addressing_Mode::DP, 3,
-            [](CPU &cpu, Bus &bus) {
+            [](CPU &cpu, Bus &bus)
+            {
                 cpu.STX();
 
                 if ((cpu.registers.dp & 0x00FF) != 0)
@@ -1032,7 +1092,8 @@ void initialise_instructions()
     opcode_table[0x87] =
         {
             "STA [dp]", Addressing_Mode::DPIL, 6,
-            [](CPU &cpu, Bus &bus) {
+            [](CPU &cpu, Bus &bus)
+            {
                 cpu.STA();
 
                 if ((cpu.registers.dp & 0x00FF) != 0)
@@ -1056,8 +1117,29 @@ void initialise_instructions()
     opcode_table[0x8A] =
         {
             "TXA", Addressing_Mode::IMP, 2,
-            [](CPU &cpu, Bus &bus) {
+            [](CPU &cpu, Bus &bus)
+            {
+                if (cpu.registers.get_accum_size_flag())
+                {
+                    cpu.registers.a = (cpu.registers.a & 0xFF00) | (cpu.registers.x & 0x00FF);
 
+                    cpu.registers.set_zero_flag((cpu.registers.a & 0x00FF) == 0);
+                    cpu.registers.set_negative_flag((cpu.registers.a & 0x80) != 0);
+                }
+                else
+                {
+                    if (cpu.registers.get_index_size_flag())
+                    {
+                        cpu.registers.a = (cpu.registers.a & 0xFF00) | (cpu.registers.x & 0x00FF);
+                    }
+                    else
+                    {
+                        cpu.registers.a = cpu.registers.x;
+                    }
+
+                    cpu.registers.set_zero_flag(cpu.registers.a == 0);
+                    cpu.registers.set_negative_flag((cpu.registers.a & 0x8000) != 0);
+                }
             }};
 
     opcode_table[0x8B] =
@@ -1070,7 +1152,8 @@ void initialise_instructions()
     opcode_table[0x8C] =
         {
             "STY addr", Addressing_Mode::ABS, 4,
-            [](CPU &cpu, Bus &bus) {
+            [](CPU &cpu, Bus &bus)
+            {
                 cpu.STY();
             }};
 
@@ -1084,7 +1167,8 @@ void initialise_instructions()
     opcode_table[0x8E] =
         {
             "STX addr", Addressing_Mode::ABS, 4,
-            [](CPU &cpu, Bus &bus) {
+            [](CPU &cpu, Bus &bus)
+            {
                 cpu.STX();
             }};
 
@@ -1105,7 +1189,8 @@ void initialise_instructions()
     opcode_table[0x91] =
         {
             "STA (dp), Y", Addressing_Mode::DPIY, 6,
-            [](CPU &cpu, Bus &bus) {
+            [](CPU &cpu, Bus &bus)
+            {
                 cpu.STA();
 
                 if ((cpu.registers.dp & 0x00FF) != 0)
@@ -1115,7 +1200,8 @@ void initialise_instructions()
     opcode_table[0x92] =
         {
             "STA (dp)", Addressing_Mode::DPI, 5,
-            [](CPU &cpu, Bus &bus) {
+            [](CPU &cpu, Bus &bus)
+            {
                 cpu.STA();
 
                 if ((cpu.registers.dp & 0x00FF) != 0)
@@ -1125,14 +1211,16 @@ void initialise_instructions()
     opcode_table[0x93] =
         {
             "STA (sr, S), Y", Addressing_Mode::SRIY, 7,
-            [](CPU &cpu, Bus &bus) {
+            [](CPU &cpu, Bus &bus)
+            {
                 cpu.STA();
             }};
 
     opcode_table[0x94] =
         {
             "STY dp, X", Addressing_Mode::DPX, 4,
-            [](CPU &cpu, Bus &bus) {
+            [](CPU &cpu, Bus &bus)
+            {
                 cpu.STY();
 
                 if ((cpu.registers.dp & 0x00FF) != 0)
@@ -1149,7 +1237,8 @@ void initialise_instructions()
     opcode_table[0x96] =
         {
             "STX dp, Y", Addressing_Mode::DPY, 4,
-            [](CPU &cpu, Bus &bus) {
+            [](CPU &cpu, Bus &bus)
+            {
                 cpu.STX();
 
                 if ((cpu.registers.dp & 0x00FF) != 0)
@@ -1159,7 +1248,8 @@ void initialise_instructions()
     opcode_table[0x97] =
         {
             "STA [dp], Y", Addressing_Mode::DPILY, 6,
-            [](CPU &cpu, Bus &bus) {
+            [](CPU &cpu, Bus &bus)
+            {
                 cpu.STA();
 
                 if ((cpu.registers.dp & 0x00FF) != 0)
@@ -1169,29 +1259,73 @@ void initialise_instructions()
     opcode_table[0x98] =
         {
             "TYA", Addressing_Mode::IMP, 2,
-            [](CPU &cpu, Bus &bus) {
+            [](CPU &cpu, Bus &bus)
+            {
+                if (cpu.registers.get_accum_size_flag())
+                {
+                    cpu.registers.a = (cpu.registers.a & 0xFF00) | (cpu.registers.y & 0x00FF);
 
+                    cpu.registers.set_zero_flag((cpu.registers.a & 0x00FF) == 0);
+                    cpu.registers.set_negative_flag((cpu.registers.a & 0x80) != 0);
+                }
+                else
+                {
+                    if (cpu.registers.get_index_size_flag())
+                    {
+                        cpu.registers.a = (cpu.registers.a & 0xFF00) | (cpu.registers.y & 0x00FF);
+                    }
+                    else
+                    {
+                        cpu.registers.a = cpu.registers.y;
+                    }
+
+                    cpu.registers.set_zero_flag(cpu.registers.a == 0);
+                    cpu.registers.set_negative_flag((cpu.registers.a & 0x8000) != 0);
+                }
             }};
 
     opcode_table[0x99] =
         {
             "STA addr, Y", Addressing_Mode::ABY, 5,
-            [](CPU &cpu, Bus &bus) {
+            [](CPU &cpu, Bus &bus)
+            {
                 cpu.STA();
             }};
 
     opcode_table[0x9A] =
         {
             "TXS", Addressing_Mode::IMP, 2,
-            [](CPU &cpu, Bus &bus) {
-
+            [](CPU &cpu, Bus &bus)
+            {
+                if (cpu.registers.get_index_size_flag())
+                {
+                    cpu.registers.sp = (cpu.registers.sp & 0xFF00) | (cpu.registers.x & 0x00FF);
+                }
+                else
+                {
+                    cpu.registers.sp = cpu.registers.x;
+                }
             }};
 
     opcode_table[0x9B] =
         {
             "TXY", Addressing_Mode::IMP, 2,
-            [](CPU &cpu, Bus &bus) {
+            [](CPU &cpu, Bus &bus)
+            {
+                if (cpu.registers.get_index_size_flag())
+                {
+                    cpu.registers.y = (cpu.registers.y & 0xFF00) | (cpu.registers.x & 0x00FF);
 
+                    cpu.registers.set_zero_flag((cpu.registers.y & 0x00FF) == 0);
+                    cpu.registers.set_negative_flag((cpu.registers.y & 0x80) != 0);
+                }
+                else
+                {
+                    cpu.registers.y = cpu.registers.x;
+
+                    cpu.registers.set_zero_flag(cpu.registers.y == 0);
+                    cpu.registers.set_negative_flag((cpu.registers.y & 0x8000) != 0);
+                }
             }};
 
     opcode_table[0x9C] =
@@ -1204,7 +1338,8 @@ void initialise_instructions()
     opcode_table[0x9D] =
         {
             "STA addr, X", Addressing_Mode::ABX, 5,
-            [](CPU &cpu, Bus &bus) {
+            [](CPU &cpu, Bus &bus)
+            {
                 cpu.STA();
             }};
 
@@ -1218,14 +1353,16 @@ void initialise_instructions()
     opcode_table[0x9F] =
         {
             "STA long, X", Addressing_Mode::ALX, 5,
-            [](CPU &cpu, Bus &bus) {
+            [](CPU &cpu, Bus &bus)
+            {
                 cpu.STA();
             }};
 
     opcode_table[0xA0] =
         {
             "LDY #const", Addressing_Mode::IMM_X, 2,
-            [](CPU &cpu, Bus &bus) {
+            [](CPU &cpu, Bus &bus)
+            {
                 cpu.LDY();
             }};
 
@@ -1243,7 +1380,8 @@ void initialise_instructions()
     opcode_table[0xA2] =
         {
             "LDX #const", Addressing_Mode::IMM_X, 2,
-            [](CPU &cpu, Bus &bus) {
+            [](CPU &cpu, Bus &bus)
+            {
                 cpu.LDX();
             }};
 
@@ -1258,7 +1396,8 @@ void initialise_instructions()
     opcode_table[0xA4] =
         {
             "LDY dp", Addressing_Mode::DP, 3,
-            [](CPU &cpu, Bus &bus) {
+            [](CPU &cpu, Bus &bus)
+            {
                 cpu.LDY();
 
                 if ((cpu.registers.dp & 0x00FF) != 0)
@@ -1276,7 +1415,8 @@ void initialise_instructions()
     opcode_table[0xA6] =
         {
             "LDX dp", Addressing_Mode::DP, 3,
-            [](CPU &cpu, Bus &bus) {
+            [](CPU &cpu, Bus &bus)
+            {
                 cpu.LDX();
 
                 if ((cpu.registers.dp & 0x00FF) != 0)
@@ -1294,8 +1434,22 @@ void initialise_instructions()
     opcode_table[0xA8] =
         {
             "TAY", Addressing_Mode::IMP, 2,
-            [](CPU &cpu, Bus &bus) {
+            [](CPU &cpu, Bus &bus)
+            {
+                if (cpu.registers.get_index_size_flag())
+                {
+                    cpu.registers.y = (cpu.registers.y & 0xFF00) | (cpu.registers.a & 0x00FF);
 
+                    cpu.registers.set_zero_flag((cpu.registers.y & 0x00FF) == 0);
+                    cpu.registers.set_negative_flag((cpu.registers.y & 0x80) != 0);
+                }
+                else
+                {
+                    cpu.registers.x = cpu.registers.a;
+
+                    cpu.registers.set_zero_flag(cpu.registers.y == 0);
+                    cpu.registers.set_negative_flag((cpu.registers.y & 0x8000) != 0);
+                }
             }};
 
     opcode_table[0xA9] =
@@ -1309,8 +1463,22 @@ void initialise_instructions()
     opcode_table[0xAA] =
         {
             "TAX", Addressing_Mode::IMP, 2,
-            [](CPU &cpu, Bus &bus) {
+            [](CPU &cpu, Bus &bus)
+            {
+                if (cpu.registers.get_index_size_flag())
+                {
+                    cpu.registers.x = (cpu.registers.x & 0xFF00) | (cpu.registers.a & 0x00FF);
 
+                    cpu.registers.set_zero_flag((cpu.registers.x & 0x00FF) == 0);
+                    cpu.registers.set_negative_flag((cpu.registers.x & 0x80) != 0);
+                }
+                else
+                {
+                    cpu.registers.x = cpu.registers.a;
+
+                    cpu.registers.set_zero_flag(cpu.registers.x == 0);
+                    cpu.registers.set_negative_flag((cpu.registers.x & 0x8000) != 0);
+                }
             }};
 
     opcode_table[0xAB] =
@@ -1323,7 +1491,8 @@ void initialise_instructions()
     opcode_table[0xAC] =
         {
             "LDY addr", Addressing_Mode::ABS, 4,
-            [](CPU &cpu, Bus &bus) {
+            [](CPU &cpu, Bus &bus)
+            {
                 cpu.LDY();
             }};
 
@@ -1338,7 +1507,8 @@ void initialise_instructions()
     opcode_table[0xAE] =
         {
             "LDX addr", Addressing_Mode::ABS, 4,
-            [](CPU &cpu, Bus &bus) {
+            [](CPU &cpu, Bus &bus)
+            {
                 cpu.LDX();
             }};
 
@@ -1393,7 +1563,8 @@ void initialise_instructions()
     opcode_table[0xB4] =
         {
             "LDY dp, X", Addressing_Mode::DPX, 4,
-            [](CPU &cpu, Bus &bus) {
+            [](CPU &cpu, Bus &bus)
+            {
                 cpu.LDY();
 
                 if ((cpu.registers.dp & 0x00FF) != 0)
@@ -1414,7 +1585,8 @@ void initialise_instructions()
     opcode_table[0xB6] =
         {
             "LDX dp, Y", Addressing_Mode::DPY, 4,
-            [](CPU &cpu, Bus &bus) {
+            [](CPU &cpu, Bus &bus)
+            {
                 cpu.LDX();
 
                 if ((cpu.registers.dp & 0x00FF) != 0)
@@ -1454,21 +1626,50 @@ void initialise_instructions()
     opcode_table[0xBA] =
         {
             "TSX", Addressing_Mode::IMP, 2,
-            [](CPU &cpu, Bus &bus) {
+            [](CPU &cpu, Bus &bus)
+            {
+                if (cpu.registers.get_index_size_flag())
+                {
+                    cpu.registers.x = (cpu.registers.x & 0xFF00) | (cpu.registers.sp & 0x00FF);
 
+                    cpu.registers.set_zero_flag((cpu.registers.x & 0x00FF) == 0);
+                    cpu.registers.set_negative_flag((cpu.registers.x & 0x80) != 0);
+                }
+                else
+                {
+                    cpu.registers.x = cpu.registers.sp;
+
+                    cpu.registers.set_zero_flag(cpu.registers.x == 0);
+                    cpu.registers.set_negative_flag((cpu.registers.x & 0x8000) != 0);
+                }
             }};
 
     opcode_table[0xBB] =
         {
             "TYX", Addressing_Mode::IMP, 2,
-            [](CPU &cpu, Bus &bus) {
+            [](CPU &cpu, Bus &bus)
+            {
+                if (cpu.registers.get_index_size_flag())
+                {
+                    cpu.registers.x = (cpu.registers.x & 0xFF00) | (cpu.registers.y & 0x00FF);
 
+                    cpu.registers.set_zero_flag((cpu.registers.x & 0x00FF) == 0);
+                    cpu.registers.set_negative_flag((cpu.registers.x & 0x80) != 0);
+                }
+                else
+                {
+                    cpu.registers.x = cpu.registers.y;
+
+                    cpu.registers.set_zero_flag(cpu.registers.x == 0);
+                    cpu.registers.set_negative_flag((cpu.registers.x & 0x8000) != 0);
+                }
             }};
 
     opcode_table[0xBC] =
         {
             "LDY addr, X", Addressing_Mode::ABX, 4,
-            [](CPU &cpu, Bus &bus) {
+            [](CPU &cpu, Bus &bus)
+            {
                 cpu.LDY();
 
                 if (cpu.page_crossed)
@@ -1489,7 +1690,8 @@ void initialise_instructions()
     opcode_table[0xBE] =
         {
             "LDX addr, Y", Addressing_Mode::ABY, 4,
-            [](CPU &cpu, Bus &bus) {
+            [](CPU &cpu, Bus &bus)
+            {
                 cpu.LDX();
 
                 if (cpu.page_crossed)
@@ -1499,7 +1701,8 @@ void initialise_instructions()
     opcode_table[0xBF] =
         {
             "LDA long, X", Addressing_Mode::ALX, 5,
-            [](CPU &cpu, Bus &bus) {
+            [](CPU &cpu, Bus &bus)
+            {
                 cpu.LDA();
             }};
 
