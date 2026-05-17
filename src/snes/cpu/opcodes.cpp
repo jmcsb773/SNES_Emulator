@@ -6,14 +6,6 @@ void CPU::LDA()
     if (registers.get_accum_size_flag())
     {
         data = read8(effective_address);
-    }
-    else
-    {
-        data = read16(effective_address);
-    }
-
-    if (registers.get_accum_size_flag())
-    {
         registers.a = (registers.a & 0xFF00) | (data & 0x00FF);
 
         registers.set_zero_flag((registers.a & 0xFF) == 0);
@@ -21,11 +13,25 @@ void CPU::LDA()
     }
     else
     {
+        data = read16(effective_address);
         registers.a = data;
 
         registers.set_zero_flag(registers.a == 0);
         registers.set_negative_flag(registers.a & 0x8000);
 
+        add_extra_cycles(1);
+    }
+}
+
+void CPU::STA()
+{
+    if (registers.get_accum_size_flag())
+    {
+        write8(effective_address, registers.a & 0xFF);
+    }
+    else
+    {
+        write16(effective_address, registers.a);
         add_extra_cycles(1);
     }
 }
@@ -901,7 +907,10 @@ void initialise_instructions()
         {
             "STA (dp, X)", Addressing_Mode::DPIX, 6,
             [](CPU &cpu, Bus &bus) {
+                cpu.STA();
 
+                if ((cpu.registers.dp & 0x00FF) != 0)
+                    cpu.add_extra_cycles(1);
             }};
 
     opcode_table[0x82] =
@@ -915,7 +924,7 @@ void initialise_instructions()
         {
             "STA sr, S", Addressing_Mode::SR, 4,
             [](CPU &cpu, Bus &bus) {
-
+                cpu.STA();
             }};
 
     opcode_table[0x84] =
@@ -929,7 +938,10 @@ void initialise_instructions()
         {
             "STA dp", Addressing_Mode::DP, 3,
             [](CPU &cpu, Bus &bus) {
+                cpu.STA();
 
+                if ((cpu.registers.dp & 0x00FF) != 0)
+                    cpu.add_extra_cycles(1);
             }};
 
     opcode_table[0x86] =
@@ -943,7 +955,10 @@ void initialise_instructions()
         {
             "STA [dp]", Addressing_Mode::DPIL, 6,
             [](CPU &cpu, Bus &bus) {
+                cpu.STA();
 
+                if ((cpu.registers.dp & 0x00FF) != 0)
+                    cpu.add_extra_cycles(1);
             }};
 
     opcode_table[0x88] =
@@ -1011,23 +1026,29 @@ void initialise_instructions()
 
     opcode_table[0x91] =
         {
-            "STA [dp], Y", Addressing_Mode::DPIY, 6,
+            "STA (dp), Y", Addressing_Mode::DPIY, 6,
             [](CPU &cpu, Bus &bus) {
+                cpu.STA();
 
+                if ((cpu.registers.dp & 0x00FF) != 0)
+                    cpu.add_extra_cycles(1);
             }};
 
     opcode_table[0x92] =
         {
             "STA (dp)", Addressing_Mode::DPI, 5,
             [](CPU &cpu, Bus &bus) {
+                cpu.STA();
 
+                if ((cpu.registers.dp & 0x00FF) != 0)
+                    cpu.add_extra_cycles(1);
             }};
 
     opcode_table[0x93] =
         {
             "STA (sr, S), Y", Addressing_Mode::SRIY, 7,
             [](CPU &cpu, Bus &bus) {
-
+                cpu.STA();
             }};
 
     opcode_table[0x94] =
@@ -1055,7 +1076,10 @@ void initialise_instructions()
         {
             "STA [dp], Y", Addressing_Mode::DPILY, 6,
             [](CPU &cpu, Bus &bus) {
+                cpu.STA();
 
+                if ((cpu.registers.dp & 0x00FF) != 0)
+                    cpu.add_extra_cycles(1);
             }};
 
     opcode_table[0x98] =
@@ -1069,7 +1093,7 @@ void initialise_instructions()
         {
             "STA addr, Y", Addressing_Mode::ABY, 5,
             [](CPU &cpu, Bus &bus) {
-
+                cpu.STA();
             }};
 
     opcode_table[0x9A] =
@@ -1097,7 +1121,7 @@ void initialise_instructions()
         {
             "STA addr, X", Addressing_Mode::ABX, 5,
             [](CPU &cpu, Bus &bus) {
-
+                cpu.STA();
             }};
 
     opcode_table[0x9E] =
@@ -1111,7 +1135,7 @@ void initialise_instructions()
         {
             "STA long, X", Addressing_Mode::ALX, 5,
             [](CPU &cpu, Bus &bus) {
-
+                cpu.STA();
             }};
 
     opcode_table[0xA0] =

@@ -61,7 +61,10 @@ public:
     // Used within instruction execution to add extra cycles conditional on execution state
     void add_extra_cycles(int cycles);
 
+    // Base instruction functions
+    // Performs the minimum operation of each instruction, defined in opcodes.cpp
     void LDA();
+    void STA();
 
     void connect_bus(Bus *bus);
 
@@ -76,11 +79,13 @@ private:
     void check_interrupt_pending();
     void handle_interrupt();
 
-    // Bus Helpers
+    // Stack Helpers
     void push8(uint8_t data);
     void push16(uint16_t data);
     uint8_t pop8();
     uint16_t pop16();
+
+    // Bus helpers (TODO: MUST MAKE IT SO IT DOES WRAPPING WHEN NECESSARY CORRECTLY)
     void write8(uint32_t address, uint8_t data);
     void write16(uint32_t address, uint16_t data);
     uint8_t read8(uint32_t address);
