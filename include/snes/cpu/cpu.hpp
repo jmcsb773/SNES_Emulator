@@ -51,24 +51,26 @@ class CPU
 {
 public:
     CPU_Registers registers;
+    uint16_t effective_address = 0;
+    bool page_crossed = false;
 
     void initialise();
     void reset();
     void step();
+
+    // Used within instruction execution to add extra cycles conditional on execution state
+    void add_extra_cycles(int cycles);
+
+    void LDA();
 
     void connect_bus(Bus *bus);
 
 private:
     Bus *bus;
 
-    uint16_t effective_address = 0;
-    bool page_crossed = false;
     Instruction fetch_instruction();
 
     void get_addressing_mode();
-
-    // Used within instruction execution to add extra cycles conditional on execution state
-    void add_extra_cycles(int cycles);
 
     // Interrupts
     void check_interrupt_pending();
