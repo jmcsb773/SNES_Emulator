@@ -65,6 +65,8 @@ public:
     // Performs the minimum operation of each instruction, defined in opcodes.cpp
     void LDA();
     void STA();
+    void LDX();
+    void LDY();
 
     void connect_bus(Bus *bus);
 

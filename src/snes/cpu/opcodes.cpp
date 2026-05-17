@@ -36,6 +36,52 @@ void CPU::STA()
     }
 }
 
+void CPU::LDX()
+{
+    uint16_t data;
+    if (registers.get_index_size_flag())
+    {
+        data = read8(effective_address);
+        registers.x = (registers.x & 0xFF00) | (data & 0x00FF);
+
+        registers.set_zero_flag((registers.x & 0xFF) == 0);
+        registers.set_negative_flag(registers.x & 0x80);
+    }
+    else
+    {
+        data = read16(effective_address);
+        registers.x = data;
+
+        registers.set_zero_flag(registers.x == 0);
+        registers.set_negative_flag(registers.x & 0x8000);
+
+        add_extra_cycles(1);
+    }
+}
+
+void CPU::LDY()
+{
+    uint16_t data;
+    if (registers.get_index_size_flag())
+    {
+        data = read8(effective_address);
+        registers.y = (registers.y & 0xFF00) | (data & 0x00FF);
+
+        registers.set_zero_flag((registers.y & 0xFF) == 0);
+        registers.set_negative_flag(registers.y & 0x80);
+    }
+    else
+    {
+        data = read16(effective_address);
+        registers.y = data;
+
+        registers.set_zero_flag(registers.y == 0);
+        registers.set_negative_flag(registers.y & 0x8000);
+
+        add_extra_cycles(1);
+    }
+}
+
 void initialise_instructions()
 {
 
@@ -1142,7 +1188,7 @@ void initialise_instructions()
         {
             "LDY #const", Addressing_Mode::IMM_X, 2,
             [](CPU &cpu, Bus &bus) {
-
+                cpu.LDY();
             }};
 
     opcode_table[0xA1] =
@@ -1153,16 +1199,14 @@ void initialise_instructions()
                 cpu.LDA();
 
                 if ((cpu.registers.dp & 0x00FF) != 0)
-                {
                     cpu.add_extra_cycles(1);
-                }
             }};
 
     opcode_table[0xA2] =
         {
             "LDX #const", Addressing_Mode::IMM_X, 2,
             [](CPU &cpu, Bus &bus) {
-
+                cpu.LDX();
             }};
 
     opcode_table[0xA3] =
@@ -1177,7 +1221,10 @@ void initialise_instructions()
         {
             "LDY dp", Addressing_Mode::DP, 3,
             [](CPU &cpu, Bus &bus) {
+                cpu.LDY();
 
+                if ((cpu.registers.dp & 0x00FF) != 0)
+                    cpu.add_extra_cycles(1);
             }};
 
     opcode_table[0xA5] =
@@ -1192,7 +1239,10 @@ void initialise_instructions()
         {
             "LDX dp", Addressing_Mode::DP, 3,
             [](CPU &cpu, Bus &bus) {
+                cpu.LDX();
 
+                if ((cpu.registers.dp & 0x00FF) != 0)
+                    cpu.add_extra_cycles(1);
             }};
 
     opcode_table[0xA7] =
@@ -1236,7 +1286,7 @@ void initialise_instructions()
         {
             "LDY addr", Addressing_Mode::ABS, 4,
             [](CPU &cpu, Bus &bus) {
-
+                cpu.LDY();
             }};
 
     opcode_table[0xAD] =
@@ -1251,7 +1301,7 @@ void initialise_instructions()
         {
             "LDX addr", Addressing_Mode::ABS, 4,
             [](CPU &cpu, Bus &bus) {
-
+                cpu.LDX();
             }};
 
     opcode_table[0xAF] =
@@ -1306,7 +1356,10 @@ void initialise_instructions()
         {
             "LDY dp, X", Addressing_Mode::DPX, 4,
             [](CPU &cpu, Bus &bus) {
+                cpu.LDY();
 
+                if ((cpu.registers.dp & 0x00FF) != 0)
+                    cpu.add_extra_cycles(1);
             }};
 
     opcode_table[0xB5] =
@@ -1324,7 +1377,10 @@ void initialise_instructions()
         {
             "LDX dp, Y", Addressing_Mode::DPY, 4,
             [](CPU &cpu, Bus &bus) {
+                cpu.LDX();
 
+                if ((cpu.registers.dp & 0x00FF) != 0)
+                    cpu.add_extra_cycles(1);
             }};
 
     opcode_table[0xB7] =
@@ -1375,7 +1431,10 @@ void initialise_instructions()
         {
             "LDY addr, X", Addressing_Mode::ABX, 4,
             [](CPU &cpu, Bus &bus) {
+                cpu.LDY();
 
+                if (cpu.page_crossed)
+                    cpu.add_extra_cycles(1);
             }};
 
     opcode_table[0xBD] =
@@ -1393,7 +1452,10 @@ void initialise_instructions()
         {
             "LDX addr, Y", Addressing_Mode::ABY, 4,
             [](CPU &cpu, Bus &bus) {
+                cpu.LDX();
 
+                if (cpu.page_crossed)
+                    cpu.add_extra_cycles(1);
             }};
 
     opcode_table[0xBF] =
